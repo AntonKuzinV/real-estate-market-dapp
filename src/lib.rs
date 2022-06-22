@@ -35,7 +35,7 @@ impl Contract {
         let property = Property::new(property_name, property_type, location, rooms, floor, storeys, squarespace, price);
         self.properties.insert(&id, &property);
 
-        env::log_str("Added new property")
+        env::log_str("You added new property")
     }
 
     pub fn get_properties(&self) -> Vec<(u32, Property)> {
@@ -44,6 +44,11 @@ impl Contract {
 
     pub fn get_property(&self, property_id: u32) -> Property {
         self.properties.get(&property_id).unwrap()
+    }
+
+    pub fn get_own_property(&self) -> Vec<(u32, Property)> {
+        let caller = env::signer_account_id();
+        self.properties.iter().filter(|&&property| property.owner == caller).collect()
     }
 
     #[payable]
@@ -61,10 +66,51 @@ impl Contract {
 
         Promise::new(owner).transfer(price);
         property.update_owner(buyer_id);
-        property.set_is_not_sale();
+        property.set_is_not_for_sale();
         self.properties.insert(&property_id, &property);
 
         env::log_str("You bought new property");
+    }
+
+    pub fn put_property_on_sale(&mut self, property_id: u32) {
+        let mut property = self.get_property(property_id);
+
+        let caller = env::signer_account_id().clone();
+        let owner = property.owner.clone();
+        assert_eq!(owner, caller, "You are not an owner of this property");
+
+        assert!(!property.is_for_sale, "Property is already on sale");
+
+        property.set_is_for_sale();
+        self.properties.insert(&property_id, &property);
+
+        env::log_str("You placed your property on sale");
+    }
+
+    pub fn put_property_off_sale(&mut self, property_id: u32) {
+        let mut property = self.get_property(property_id);
+
+        let caller = env::signer_account_id().clone();
+        let owner = property.owner.clone();
+        assert_eq!(owner, caller, "You are not an owner of this property");
+
+        assert!(!property.is_for_sale, "Property is already not on sale");
+
+        property.set_is_not_for_sale();
+        self.properties.insert(&property_id, &property);
+
+        env::log_str("You placed your property on sale");
+    }
+
+    pub fn delete_property(&mut self, property_id: u32, ) {
+        let mut property = self.get_property(property_id);
+
+        let caller = env::signer_account_id().clone();
+        let owner = property.owner.clone();
+        assert_eq!(owner, caller, "You are not an owner of this property");
+
+        self.properties.remove(&property_id);
+        env::log_str("Successfully deleted property from a market");
     }
 }
 

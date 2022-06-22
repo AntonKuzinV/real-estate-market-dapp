@@ -46,9 +46,12 @@ impl Property {
     pub fn update_owner(&mut self, owner: AccountId) {
         self.owner = owner;
     }
-    pub fn set_is_not_sale(&mut self) {
+    pub fn set_is_not_for_sale(&mut self) {
         self.is_for_sale = false;
     }
 
+    pub fn set_is_for_sale(&mut self) {
+        self.is_for_sale = true;
+    }
 }
 
