@@ -17,7 +17,7 @@ mod property;
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
-    pub properties: UnorderedMap<u32, Property>,
+    properties: UnorderedMap<u32, Property>,
 }
 
 impl Default for Contract {
@@ -48,7 +48,8 @@ impl Contract {
 
     pub fn get_own_property(&self) -> Vec<(u32, Property)> {
         let caller = env::signer_account_id();
-        self.properties.iter().filter(|&&property| property.owner == caller).collect()
+
+        self.properties.iter().filter(|property| property.1.owner == caller).collect()
     }
 
     #[payable]
@@ -116,26 +117,85 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use near_sdk::{test_utils::*, testing_env};
 
     use crate::*;
 
-    const ONE_NEAR: u128 = u128::pow(10, 24);
+    fn contract_account() -> AccountId { "contract.testnet".parse::<AccountId>().unwrap() }
 
-    fn contract_account() -> AccountId {
-        "contract".parse::<AccountId>().unwrap()
-    }
+    fn owner_account_id() -> AccountId { "owner.testnet".parse::<AccountId>().unwrap() }
 
-    fn get_context(predecessor_account_id: AccountId) -> VMContextBuilder {
+    fn buyer_account_id() -> AccountId { "buyer.testnet".parse::<AccountId>().unwrap() }
+
+    fn get_context(signer: &AccountId, deposit: Option<u128>) -> VMContextBuilder {
         let mut builder = VMContextBuilder::new();
         builder
             .current_account_id(contract_account())
-            .account_balance(15 * ONE_NEAR)
-            .signer_account_id(predecessor_account_id.clone())
-            .predecessor_account_id(predecessor_account_id);
+            .account_balance(1000 * ONE_NEAR)
+            .signer_account_id(signer.clone())
+            .attached_deposit(deposit.unwrap_or(0))
+            .prepaid_gas(Gas(30_000_000_000_000));
         builder
     }
 
     #[test]
-    fn test() {}
+    fn test_add_property() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        assert_eq!(contract.get_properties().len(), 1, "Item wasn't created");
+    }
+
+    #[test]
+    fn get_own_property() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+        let mut contract = Contract::default();
+
+        let num_of_properties = 5;
+        for _ in 0..num_of_properties {
+            contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+        }
+
+        let properties = contract.get_own_property();
+        assert_eq!(properties.len(), num_of_properties, "Not all properties has been added")
+    }
+
+    #[test]
+    fn buy_property() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        let property_to_buy = contract.get_property(0);
+
+        let context = get_context(&buyer_account_id(), Some(property_to_buy.price * ONE_NEAR));
+        testing_env!(context.build());
+
+        contract.buy_property(0);
+
+        let own_properties = contract.get_own_property();
+        assert_eq!(own_properties.len(), 1, "Property wasn't bought");
+    }
+
+    #[test]
+    #[should_panic]
+    fn buy_own_property() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        let property_to_buy = contract.get_property(0);
+
+        contract.buy_property(0);
+    }
+
 }
