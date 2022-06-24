@@ -95,7 +95,7 @@ impl Contract {
         let owner = property.owner.clone();
         assert_eq!(owner, caller, "You are not an owner of this property");
 
-        assert!(!property.is_for_sale, "Property is already not on sale");
+        assert!(property.is_for_sale, "Property is already not on sale");
 
         property.set_is_not_for_sale();
         self.properties.insert(&property_id, &property);
@@ -193,9 +193,78 @@ mod tests {
         let mut contract = Contract::default();
         contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
 
+        contract.buy_property(0);
+    }
+    #[test]
+    #[should_panic]
+    fn buy_property_with_insufficient_deposit() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
         let property_to_buy = contract.get_property(0);
+
+        let context = get_context(&buyer_account_id(), Some(ONE_NEAR));
+        testing_env!(context.build());
 
         contract.buy_property(0);
     }
 
+    #[test]
+    fn put_property_off_sale() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        contract.put_property_off_sale(0);
+
+        let property = contract.get_property(0);
+        assert_eq!(property.is_for_sale, false, "Failed to put property off sale");
+    }
+
+    #[test]
+    fn put_property_on_sale() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        contract.put_property_off_sale(0);
+
+        contract.put_property_on_sale(0);
+        let property = contract.get_property(0);
+        assert_eq!(property.is_for_sale, true, "Failed to put property on sale");
+    }
+
+    #[test]
+    fn delete_property() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        contract.delete_property(0);
+        assert_eq!(contract.get_properties().len(), 0, "Failed to delete property");
+    }
+
+    #[test]
+    #[should_panic]
+    fn delete_not_owned_property() {
+        let context = get_context(&owner_account_id(), None);
+        testing_env!(context.build());
+
+        let mut contract = Contract::default();
+        contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
+
+        let context = get_context(&buyer_account_id(), None);
+        testing_env!(context.build());
+
+        contract.delete_property(0);
+    }
 }
