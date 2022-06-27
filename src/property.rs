@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
 
 #[near_bindgen]
@@ -14,7 +15,7 @@ pub struct Property {
     pub floor: u16,
     pub storeys: u8,
     pub squarespace: u16,
-    pub price: u128,
+    pub price: U128,
     pub owner: AccountId,
     pub is_for_sale: bool,
 }
@@ -37,7 +38,7 @@ impl Property {
             floor,
             storeys,
             squarespace,
-            price,
+            price: U128::from(price),
             owner: env::signer_account_id(),
             is_for_sale: true,
         }

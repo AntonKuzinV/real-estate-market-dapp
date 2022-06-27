@@ -1,4 +1,5 @@
 use std::iter::once_with;
+
 use near_sdk::{
     *,
     borsh::{self, *},
@@ -10,6 +11,7 @@ use near_sdk::{
 use near_sdk::{AccountId, env, near_bindgen};
 
 pub use property::*;
+
 use crate::serde_json::json;
 
 mod property;
@@ -23,7 +25,7 @@ pub struct Contract {
 impl Default for Contract {
     fn default() -> Self {
         Self {
-            properties: UnorderedMap::new(b"a".to_vec())
+            properties: UnorderedMap::<u32, Property>::new(b"p")
         }
     }
 }
@@ -38,8 +40,12 @@ impl Contract {
         env::log_str("You added new property")
     }
 
-    pub fn get_properties(&self) -> Vec<(u32, Property)> {
-        self.properties.iter().collect()
+    pub fn get_properties(&self, from_index: u64, limit: u64) -> Vec<(u32, Property)> {
+        let keys = self.properties.keys_as_vector();
+        let values = self.properties.values_as_vector();
+        (from_index..std::cmp::min(from_index + limit, self.properties.len()))
+            .map(|index| (keys.get(index).unwrap(), values.get(index).unwrap()))
+            .collect()
     }
 
     pub fn get_property(&self, property_id: u32) -> Property {
@@ -61,7 +67,7 @@ impl Contract {
         let owner = property.owner.clone();
         assert_ne!(owner, buyer_id, "You cannot purchase your own property");
 
-        let price = ONE_NEAR * property.price;
+        let price = ONE_NEAR * u128::from(property.price);
         let payment = env::attached_deposit();
         assert!(payment >= price, "Not enough funds {} to pay {}", payment, price);
 
@@ -103,7 +109,7 @@ impl Contract {
         env::log_str("You placed your property on sale");
     }
 
-    pub fn delete_property(&mut self, property_id: u32, ) {
+    pub fn delete_property(&mut self, property_id: u32) {
         let mut property = self.get_property(property_id);
 
         let caller = env::signer_account_id().clone();
@@ -117,10 +123,11 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use near_sdk::{test_utils::*, testing_env};
 
     use crate::*;
+
+    use super::*;
 
     fn contract_account() -> AccountId { "contract.testnet".parse::<AccountId>().unwrap() }
 
@@ -147,7 +154,7 @@ mod tests {
         let mut contract = Contract::default();
         contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
 
-        assert_eq!(contract.get_properties().len(), 1, "Item wasn't created");
+        assert_eq!(contract.properties.len(), 1, "Property wasn't created");
     }
 
     #[test]
@@ -175,7 +182,7 @@ mod tests {
 
         let property_to_buy = contract.get_property(0);
 
-        let context = get_context(&buyer_account_id(), Some(property_to_buy.price * ONE_NEAR));
+        let context = get_context(&buyer_account_id(), Some(u128::from(property_to_buy.price) * ONE_NEAR));
         testing_env!(context.build());
 
         contract.buy_property(0);
@@ -195,6 +202,7 @@ mod tests {
 
         contract.buy_property(0);
     }
+
     #[test]
     #[should_panic]
     fn buy_property_with_insufficient_deposit() {
@@ -250,7 +258,7 @@ mod tests {
         contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
 
         contract.delete_property(0);
-        assert_eq!(contract.get_properties().len(), 0, "Failed to delete property");
+        assert_eq!(contract.properties.len(), 0, "Failed to delete property");
     }
 
     #[test]
