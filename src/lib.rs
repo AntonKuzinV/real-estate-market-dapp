@@ -1,20 +1,16 @@
-use std::iter::once_with;
-
 use near_sdk::{
     *,
     borsh::{self, *},
     collections::*,
-    json_types::*,
-    serde::{self, *},
 };
 #[allow(unused_imports)]
 use near_sdk::{AccountId, env, near_bindgen};
 
 pub use property::*;
 
-use crate::serde_json::json;
-
 mod property;
+
+const LIMIT: u64 = 50;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -40,10 +36,10 @@ impl Contract {
         env::log_str("You added new property")
     }
 
-    pub fn get_properties(&self, from_index: u64, limit: u64) -> Vec<(u32, Property)> {
+    pub fn get_properties(&self, from_index: u64) -> Vec<(u32, Property)> {
         let keys = self.properties.keys_as_vector();
         let values = self.properties.values_as_vector();
-        (from_index..std::cmp::min(from_index + limit, self.properties.len()))
+        (from_index..std::cmp::min(from_index + LIMIT, self.properties.len()))
             .map(|index| (keys.get(index).unwrap(), values.get(index).unwrap()))
             .collect()
     }
@@ -110,7 +106,7 @@ impl Contract {
     }
 
     pub fn delete_property(&mut self, property_id: u32) {
-        let mut property = self.get_property(property_id);
+        let property = self.get_property(property_id);
 
         let caller = env::signer_account_id().clone();
         let owner = property.owner.clone();
@@ -121,13 +117,11 @@ impl Contract {
     }
 }
 
-#[cfg(test)]
 mod tests {
+    #[cfg(test)]
     use near_sdk::{test_utils::*, testing_env};
 
     use crate::*;
-
-    use super::*;
 
     fn contract_account() -> AccountId { "contract.testnet".parse::<AccountId>().unwrap() }
 
@@ -211,8 +205,6 @@ mod tests {
 
         let mut contract = Contract::default();
         contract.add_property(String::from("Testname"), String::from("Apartment"), String::from("Ukraine"), 2, 4, 1, 45, 100);
-
-        let property_to_buy = contract.get_property(0);
 
         let context = get_context(&buyer_account_id(), Some(ONE_NEAR));
         testing_env!(context.build());
