@@ -1,11 +1,22 @@
 <template>
-  <div class="card">
-    <b-button variant="dark"><b-icon icon="plus"/></b-button>
+  <div class="card text-white bg-dark mb-3 mx-1" style="max-width: 18rem;" ref="cardRef" @mouseenter="setGlow" @mouseleave="unsetGlow">
+    <div class="card-header">{{ property[1].property_type}}</div>
     <div class="card-body">
-      <h5 class="card-title card-name">{{ TEXT }}</h5>
-      <p class="card-text">Type: {{}}</p>
-      <p class="card-text">Price: {{}}$</p>
-      <p class="card-text">Rooms: {{}}</p>
+      <h4 class="card-title text-uppercase text-center">{{ property[1].property_name }}</h4>
+      <h5 class="card-title"></h5>
+      <h6 class="card-text text-end"> Floor: {{ property[1].floor }}</h6>
+      <h6 class="card-text text-end"> Rooms: {{ property[1].rooms }}</h6>
+      <h6 class="card-text text-end"> Storeys: {{ property[1].storeys }}</h6>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-light btn-outline-success" v-if="property[1].owner !== accountId">Buy property</button>
+        <button type="button" class="btn btn-light btn-outline-success" v-if="property[1].owner === accountId && !property[1].is_for_sale">Put
+          on sale
+        </button>
+        <button type="button" class="btn btn-light btn-outline-warning" v-if="property[1].owner === accountId && property[1].is_for_sale">Put
+          off sale
+        </button>
+        <button type="button" class="btn btn-light btn-outline-danger" v-if="property[1].owner === accountId">Delete property</button>
+      </div>
     </div>
   </div>
 </template>
@@ -37,35 +48,32 @@ export default {
     deleteProperty: {
       type: Function,
       required: true,
+    },
+    accountId: {
+      typeof: String,
+      required: true,
+    },
+  },
+  methods: {
+    setGlow() {
+      if (this.property[1].owner === this.accountId) {
+        this.$refs.cardRef.style.boxShadow = "0 0 50px 0 rgb(255, 21, 21)";
+      } else {
+        this.$refs.cardRef.style.boxShadow = "0 0 50px 0 rgb(81, 173, 45)";
+      }
+    },
+    unsetGlow() {
+      this.$refs.cardRef.style.boxShadow = "0 0 50px 0 transparent";
     }
   },
 };
 </script>
 
 <style scoped>
-.card {
-  border: 1px solid #474747;
-  transition: all ease-in-out 0.3s;
-  background-color: #fff;
-  margin-bottom: 20px;
-  width: 100%;
-}
-.card img {
-  max-height: 400px;
-  min-height: 400px;
-}
-.card-body {
-  position: absolute;
-  text-align: left;
-  left: 0;
-  bottom: 38px;
-  color: #ffffff;
-  background-color: rgba(0, 0, 0, 0.5);
-  width: 100%;
-}
 .card:hover {
-  border-color: #fff;
-  box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.5);
+  border-color: #000;
+  /*box-shadow: 0 0 50px 0 rgb(81, 173, 45);*/
   transform: translateY(-10px);
+  transition-duration: 0.5s;
 }
 </style>
