@@ -22,7 +22,7 @@ export const getProperties = (from_index) => {
 }
 
 export const getProperty = (propertyId) => {
-  return wallet.account().viewFunction(CONTRACT_ID, "get_property", {propertyId})
+  return wallet.account().viewFunction(CONTRACT_ID, "get_property", {property_id: propertyId})
 }
 
 export const getOwnProperty = () => {
@@ -47,7 +47,7 @@ export const buyProperty = (propertyId, price) => {
     contractId: CONTRACT_ID,
     methodName: "buy_property",
     gas,
-    args: {propertyId},
+    args: {property_id: propertyId},
     attachedDeposit: utils.format.parseNearAmount(price),
   })
 }
@@ -57,7 +57,7 @@ export const deleteProperty = (propertyId) => {
     contractId: CONTRACT_ID,
     methodName: "delete_property",
     gas,
-    args: {propertyId}
+    args: {property_id: propertyId}
   })
 }
 
@@ -66,7 +66,7 @@ export const putPropertyOnSale = (propertyId) => {
     contractId: CONTRACT_ID,
     methodName: "put_property_on_sale",
     gas,
-    args: {propertyId}
+    args: {property_id: propertyId}
   })
 }
 
@@ -75,6 +75,6 @@ export const putPropertyOffSale = (propertyId) => {
     contractId: CONTRACT_ID,
     methodName: "put_property_off_sale",
     gas,
-    args: {propertyId}
+    args: {property_id: propertyId}
   })
 }

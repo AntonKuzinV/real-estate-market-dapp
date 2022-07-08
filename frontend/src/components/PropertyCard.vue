@@ -1,6 +1,7 @@
 <template>
-  <div class="card text-white bg-dark mb-3 mx-1" style="max-width: 18rem;" ref="cardRef" @mouseenter="setGlow" @mouseleave="unsetGlow">
-    <div class="card-header">{{ property[1].property_type}}</div>
+  <div class="card text-white bg-dark mb-3 mx-1" style="max-width: 18rem;" ref="cardRef" @mouseenter="setGlow"
+       @mouseleave="unsetGlow">
+    <div class="card-header">{{ accountId }}</div>
     <div class="card-body">
       <h4 class="card-title text-uppercase text-center">{{ property[1].property_name }}</h4>
       <h5 class="card-title"></h5>
@@ -8,20 +9,28 @@
       <h6 class="card-text text-end"> Rooms: {{ property[1].rooms }}</h6>
       <h6 class="card-text text-end"> Storeys: {{ property[1].storeys }}</h6>
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-light btn-outline-success" v-if="property[1].owner !== accountId">Buy property</button>
-        <button type="button" class="btn btn-light btn-outline-success" v-if="property[1].owner === accountId && !property[1].is_for_sale">Put
+        <button type="button" class="btn btn-light btn-outline-success" v-if="property[1].owner !== accountId"
+                @click="buyProperty(property[0], property[1].price)">Buy property for {{ property[1].price }} Ⓝ
+        </button>
+        <button type="button" class="btn btn-light btn-outline-success"
+                v-if="property[1].owner === accountId && !property[1].is_for_sale" @click="putOnSale(property[0])">Put
           on sale
         </button>
-        <button type="button" class="btn btn-light btn-outline-warning" v-if="property[1].owner === accountId && property[1].is_for_sale">Put
+        <button type="button" class="btn btn-light btn-outline-warning"
+                v-if="property[1].owner === accountId && property[1].is_for_sale" @click="putOffSale(property[0])">Put
           off sale
         </button>
-        <button type="button" class="btn btn-light btn-outline-danger" v-if="property[1].owner === accountId">Delete property</button>
+        <button type="button" class="btn btn-light btn-outline-danger" v-if="property[1].owner === accountId">Delete
+          property
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { useProperties } from '@/composables/near';
+
 export default {
   name: 'PropertyCard',
   props: {
@@ -29,42 +38,51 @@ export default {
       type: Object,
       required: true,
     },
-    contractId: {
-      type: String,
-      required: true,
-    },
-    buyProperty: {
-      type: Function,
-      required: true,
-    },
-    putPropertyOffSale: {
-      type: Function,
-      required: true,
-    },
-    putPropertyOnSale: {
-      type: Function,
-      required: true,
-    },
-    deleteProperty: {
-      type: Function,
-      required: true,
-    },
     accountId: {
-      typeof: String,
-      required: true,
+      type: String,
+      required: false,
     },
+    updateProperties: {
+      type: Function,
+      required: true,
+    }
   },
   methods: {
     setGlow() {
       if (this.property[1].owner === this.accountId) {
-        this.$refs.cardRef.style.boxShadow = "0 0 50px 0 rgb(255, 21, 21)";
+        this.$refs.cardRef.style.boxShadow = '0 0 50px 0 rgb(255, 21, 21)';
       } else {
-        this.$refs.cardRef.style.boxShadow = "0 0 50px 0 rgb(81, 173, 45)";
+        this.$refs.cardRef.style.boxShadow = '0 0 50px 0 rgb(81, 173, 45)';
       }
     },
     unsetGlow() {
-      this.$refs.cardRef.style.boxShadow = "0 0 50px 0 transparent";
-    }
+      this.$refs.cardRef.style.boxShadow = '0 0 50px 0 transparent';
+    },
+  },
+  setup(props) {
+    const {
+      CONTRACT_ID,
+      addProperty,
+      deleteProperty,
+      buyProperty,
+      putPropertyOnSale,
+      putPropertyOffSale,
+    } = useProperties();
+
+    return {
+      CONTRACT_ID,
+      addProperty,
+      deleteProperty,
+      buyProperty,
+      putOnSale: async (id) => {
+        await putPropertyOnSale(id);
+        await props.updateProperties();
+      },
+      putOffSale: async (id) => {
+        await putPropertyOffSale(id);
+        await props.updateProperties();
+      },
+    };
   },
 };
 </script>

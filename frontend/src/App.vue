@@ -1,12 +1,9 @@
 <template>
-  <TheHome/>
+  <router-view/>
 </template>
 
-
 <script>
-
-import TheHome from '@/views/TheHome';
 export default {
-  components: { TheHome },
+
 };
 </script>

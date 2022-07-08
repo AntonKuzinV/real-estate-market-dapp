@@ -1,9 +1,7 @@
 <template>
   <div class="row row-cols-1 row-cols-md-2 g-4 ms-4">
     <PropertyCard v-for="property in properties" :key="property[0]"
-                  :property="property" :delete-property="deleteProperty" :put-property-on-sale="putPropertyOffSale"
-                  :put-property-off-sale="putPropertyOffSale" :buy-property="buyProperty" :contract-id="contractId"
-                  :account-id="accountId"/>
+                  :property="property" :account-id="accountId" :update-properties="updateProperties"/>
   </div>
 </template>
 
@@ -18,31 +16,15 @@ export default {
       type: Array,
       required: true,
     },
-    contractId: {
+    accountId: {
       type: String,
       required: true,
     },
-    buyProperty: {
+    updateProperties: {
       type: Function,
       required: true,
-    },
-    putPropertyOffSale: {
-      type: Function,
-      required: true,
-    },
-    putPropertyOnSale: {
-      type: Function,
-      required: true,
-    },
-    deleteProperty: {
-      type: Function,
-      required: true,
-    },
-    accountId: {
-      typeof: String,
-      required: true,
-    },
-  },
+    }
+  }
 };
 </script>
 

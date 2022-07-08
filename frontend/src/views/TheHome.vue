@@ -1,51 +1,25 @@
 <template>
-  <TheHeader
-      :accountId="accountId"
-      :signIn="signIn"
-      :signOut="signOut"
-  />
-  <TheProperties
-      :properties="properties"
-      :contract-id="CONTRACT_ID"
-      :buy-property="buyProperty"
-      :delete-property="deleteProperty"
-      :put-property-off-sale="putPropertyOffSale"
-      :put-property-on-sale="putPropertyOnSale"
-      :account-id="accountId"
-  />
+  <TheHeader :account-id="accountId" :sign-in="signIn" :sign-out="signOut"/>
+  <TheProperties :properties="properties" :account-id="accountId" :update-properties="updateProperties"/>
 </template>
 
 <script>
 import TheHeader from '@/components/layouts/TheHeader';
-import {useProperties, useWallet} from '@/composables/near';
 import TheProperties from '@/components/TheProperties';
+import { useProperties, useWallet } from '@/composables/near';
 
 export default {
   name: 'TheHome',
   components: { TheProperties, TheHeader },
   setup() {
-    const { accountId, signIn, signOut } = useWallet();
-    const {
-      properties,
-      CONTRACT_ID,
-      addProperty,
-      deleteProperty,
-      buyProperty,
-      putPropertyOnSale,
-      putPropertyOffSale
-    } = useProperties();
-
+    const {accountId, signOut, signIn} = useWallet();
+    const {properties, updateProperties} = useProperties();
     return {
       accountId,
-      signIn,
       signOut,
+      signIn,
       properties,
-      CONTRACT_ID,
-      addProperty,
-      deleteProperty,
-      buyProperty,
-      putPropertyOnSale,
-      putPropertyOffSale,
+      updateProperties
     }
   }
 };

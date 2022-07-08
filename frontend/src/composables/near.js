@@ -11,6 +11,7 @@ import {
   putPropertyOffSale,
   putPropertyOnSale,
 } from '@/services/near';
+import router from '@/router';
 
 export const useProperties = () => {
   const properties = ref([]);
@@ -18,12 +19,15 @@ export const useProperties = () => {
 
   onMounted(async () => {
     try {
-      properties.value = await getProperties(0);
+      await updateProperties()
     } catch (e) {
       err.value = e;
       console.log(err.value);
     }
   });
+  const updateProperties = async () => {
+    properties.value = await getProperties(0);
+  }
   return {
     properties,
     CONTRACT_ID,
@@ -35,6 +39,7 @@ export const useProperties = () => {
     deleteProperty,
     putPropertyOffSale,
     putPropertyOnSale,
+    updateProperties,
   }
 }
 
@@ -50,7 +55,6 @@ export const useWallet = () => {
       console.error(err.value);
     }
   });
-
   const handleSignIn = () => {
     wallet.requestSignIn({
       contractId: CONTRACT_ID,
@@ -60,7 +64,8 @@ export const useWallet = () => {
 
   const handleSignOut = () => {
     wallet.signOut()
-    accountId.value = ''
+    accountId.value = wallet.getAccountId()
+    router.push('/');
   };
 
   return {
