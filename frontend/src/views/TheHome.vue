@@ -1,5 +1,6 @@
 <template>
-  <TheHeader :account-id="accountId" :sign-in="signIn" :sign-out="signOut"/>
+  <TheHeader :account-id="accountId" :sign-in="signIn" :sign-out="signOut" :add-property="addProperty"
+             :update-properties="updateProperties"/>
   <TheProperties :properties="properties" :account-id="accountId" :update-properties="updateProperties"/>
 </template>
 
@@ -12,16 +13,17 @@ export default {
   name: 'TheHome',
   components: { TheProperties, TheHeader },
   setup() {
-    const {accountId, signOut, signIn} = useWallet();
-    const {properties, updateProperties} = useProperties();
+    const { accountId, signOut, signIn } = useWallet();
+    const { properties, updateProperties, addProperty } = useProperties();
     return {
       accountId,
       signOut,
       signIn,
       properties,
-      updateProperties
-    }
-  }
+      updateProperties,
+      addProperty
+    };
+  },
 };
 </script>
 
