@@ -14,10 +14,10 @@ Demo project for Near Developer Certification. Non commercial Real Estate market
 # Build
 To build smart contract:
 ```bash build.sh```
-#Deploy
+# Deploy
 Dev-deploy: ```bash dev-deploy.sh```
 Deploy: ```bash deploy.sh```
-#Start frontend
+# Start frontend
 1. [Set env variables in frontend/.env by .env.dist example](frontend/.env.dist)
 2. ```cd frontend```
 3. ```npm install```
