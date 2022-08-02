@@ -1,4 +1,5 @@
 <template>
+  <DeletePropertyModal :property-id="propertyId" :delete-property="deleteProperty" :update-properties="updateProperties"/>
   <div class="card text-white bg-dark mb-3 mx-1" style="max-width: 18rem;" ref="cardRef" @mouseenter="setGlow"
        @mouseleave="unsetGlow">
     <div class="card-header text-end">
@@ -24,7 +25,7 @@
                 v-if="property[1].owner === accountId && property[1].is_for_sale" @click="putOffSale(property[0])">Put
           off sale
         </button>
-        <button type="button" class="btn btn-light btn-outline-danger" v-if="property[1].owner === accountId">Delete
+        <button type="button" class="btn btn-light btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePropertyModal" @click="setPropertyToDeleteId(property[0])"  v-if="property[1].owner === accountId">Delete
           property
         </button>
       </div>
@@ -34,9 +35,12 @@
 
 <script>
 import { useProperties } from '@/composables/near';
+import DeletePropertyModal from '@/components/DeletePropertyModal';
+import { mapMutations } from 'vuex';
 
 export default {
   name: 'PropertyCard',
+  components: { DeletePropertyModal },
   props: {
     property: {
       type: Object,
@@ -66,6 +70,14 @@ export default {
     unsetGlow() {
       this.$refs.cardRef.style.boxShadow = '0 0 50px 0 transparent';
     },
+    ...mapMutations({
+      setPropertyToDeleteId: 'setPropertyToDeleteId'
+    })
+  },
+  computed: {
+    propertyId() {
+      return this.$store.getters.propertyToDeleteId;
+    }
   },
   setup(props) {
     const {
