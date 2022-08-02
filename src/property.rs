@@ -1,10 +1,9 @@
-#[allow(unused_imports)]
-use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
+use near_sdk::{env, near_bindgen, AccountId};
 
-#[near_bindgen]
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Property {
@@ -21,7 +20,10 @@ pub struct Property {
 }
 
 impl Property {
-    pub fn new(property_name: String, property_type: String, location: String, rooms: u16, floor: u16, storeys: u8, squarespace: u16, price: u128) -> Self {
+    pub fn new(
+        property_name: String, property_type: String, location: String, rooms: u16, floor: u16,
+        storeys: u8, squarespace: u16, price: u128,
+    ) -> Self {
         assert!(property_name.len() > 0, "Property name is required");
         assert!(property_type.len() > 0, "Property type is required");
         assert!(location.len() > 0, "Property location is required");
@@ -55,4 +57,3 @@ impl Property {
         self.is_for_sale = true;
     }
 }
-
