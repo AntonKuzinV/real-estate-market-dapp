@@ -9,7 +9,7 @@ Demo project for Near Developer Certification. Non commercial Real Estate market
 - npm
 - NEAR CLI 3.1
 
-#NEAR Login
+# NEAR Login
 ```near login```
 # Build
 To build smart contract:
